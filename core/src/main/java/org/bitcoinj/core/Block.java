@@ -30,6 +30,7 @@ import java.util.*;
 
 import static org.bitcoinj.core.Coin.*;
 import static org.bitcoinj.core.Sha256Hash.*;
+import static org.bitcoinj.core.Utils.scryptDigest;
 
 /**
  * <p>A block is a group of transactions, and is one of the fundamental data structures of the Bitcoin system.
@@ -74,7 +75,7 @@ public class Block extends Message {
     public static final int MAX_BLOCK_SIGOPS = MAX_BLOCK_SIZE / 50;
 
     /** A value for difficultyTarget (nBits) that allows half of all possible hash solutions. Used in unit testing. */
-    public static final long EASIEST_DIFFICULTY_TARGET = 0x207fFFFFL;
+    public static final long EASIEST_DIFFICULTY_TARGET = 0x207FFFFFL;
 
     /** Value to use if the block height is unknown */
     public static final int BLOCK_HEIGHT_UNKNOWN = -1;
@@ -103,6 +104,7 @@ public class Block extends Message {
 
     /** Stores the hash of the block. If null, getHash() will recalculate it. */
     private Sha256Hash hash;
+    private Sha256Hash scryptHash;
 
     protected boolean headerBytesValid;
     protected boolean transactionBytesValid;
@@ -412,6 +414,16 @@ public class Block extends Message {
         }
     }
 
+    private Sha256Hash calculateScryptHash() {
+        try {
+            ByteArrayOutputStream bos = new UnsafeByteArrayOutputStream(HEADER_SIZE);
+            writeHeader(bos);
+            return new Sha256Hash(Utils.reverseBytes(scryptDigest(bos.toByteArray())));
+        } catch (IOException e) {
+            throw new RuntimeException(e); // Cannot happen.
+        }
+    }
+
     /**
      * Returns the hash of the block (which for a valid, solved block should be below the target) in the form seen on
      * the block explorer. If you call this on block 1 in the mainnet chain
@@ -419,6 +431,10 @@ public class Block extends Message {
      */
     public String getHashAsString() {
         return getHash().toString();
+    }
+
+    public String getScryptHashAsString() {
+        return getScryptHash().toString();
     }
 
     /**
@@ -430,6 +446,12 @@ public class Block extends Message {
         if (hash == null)
             hash = calculateHash();
         return hash;
+    }
+
+    public Sha256Hash getScryptHash() {
+        if (scryptHash == null)
+            scryptHash = calculateScryptHash();
+        return scryptHash;
     }
 
     /**
@@ -544,11 +566,11 @@ public class Block extends Message {
         // field is of the right value. This requires us to have the preceeding blocks.
         BigInteger target = getDifficultyTargetAsInteger();
 
-        BigInteger h = getHash().toBigInteger();
+        BigInteger h = getScryptHash().toBigInteger();
         if (h.compareTo(target) > 0) {
             // Proof of work check failed!
             if (throwException)
-                throw new VerificationException("Hash is higher than target: " + getHashAsString() + " vs "
+                throw new VerificationException("Hash is higher than target: " + getScryptHashAsString() + " vs "
                         + target.toString(16));
             else
                 return false;
@@ -790,6 +812,7 @@ public class Block extends Message {
         unCacheHeader();
         this.prevBlockHash = prevBlockHash;
         this.hash = null;
+        this.scryptHash = null;
     }
 
     /**
@@ -811,6 +834,7 @@ public class Block extends Message {
         unCacheHeader();
         this.time = time;
         this.hash = null;
+        this.scryptHash = null;
     }
 
     /**
@@ -831,6 +855,7 @@ public class Block extends Message {
         unCacheHeader();
         this.difficultyTarget = compactForm;
         this.hash = null;
+        this.scryptHash = null;
     }
 
     /**
@@ -846,6 +871,7 @@ public class Block extends Message {
         unCacheHeader();
         this.nonce = nonce;
         this.hash = null;
+        this.scryptHash = null;
     }
 
     /** Returns an immutable list of transactions held in this block, or null if this object represents just a header. */

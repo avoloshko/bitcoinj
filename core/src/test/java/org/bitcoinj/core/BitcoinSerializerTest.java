@@ -30,11 +30,11 @@ import static org.bitcoinj.core.Utils.HEX;
 import static org.junit.Assert.*;
 
 public class BitcoinSerializerTest {
-    private static final byte[] ADDRESS_MESSAGE_BYTES = HEX.decode("f9beb4d96164647200000000000000001f000000" +
+    private static final byte[] ADDRESS_MESSAGE_BYTES = HEX.decode("fbc0b6db6164647200000000000000001f000000" +
             "ed52399b01e215104d010000000000000000000000000000000000ffff0a000001208d");
 
     private static final byte[] TRANSACTION_MESSAGE_BYTES = HEX.withSeparator(" ", 2).decode(
-            "f9 be b4 d9 74 78 00 00  00 00 00 00 00 00 00 00" +
+            "fb c0 b6 db 74 78 00 00  00 00 00 00 00 00 00 00" +
             "02 01 00 00 e2 93 cd be  01 00 00 00 01 6d bd db" +
             "08 5b 1d 8a f7 51 84 f0  bc 01 fa d5 8d 12 66 e9" +
             "b6 3b 50 88 19 90 e4 b4  0d 6a ee 36 29 00 00 00" +
@@ -56,6 +56,7 @@ public class BitcoinSerializerTest {
     @Test
     public void testAddr() throws Exception {
         final NetworkParameters params = MainNetParams.get();
+
         MessageSerializer serializer = params.getDefaultSerializer();
         // the actual data from https://en.bitcoin.it/wiki/Protocol_specification#addr
         AddressMessage addressMessage = (AddressMessage) serializer.deserialize(ByteBuffer.wrap(ADDRESS_MESSAGE_BYTES));

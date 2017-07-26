@@ -1,5 +1,6 @@
 /*
- * Copyright 2013 Google Inc.
+ * Copyright 2011 Google Inc.
+ * Copyright 2014 Andreas Schildbach
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,18 +15,19 @@
  * limitations under the License.
  */
 
-package org.bitcoinj.params;
+package org.bitcoinj.core;
 
 /**
- * Network parameters for the regression test mode of bitcoind in which all blocks are trivially solvable.
+ * <p>Instances of this class are not safe for use by multiple threads.</p>
  */
-public class RegTestParams extends LitecoinRegTestParams {
+public class FeeFilterMessage extends EmptyMessage {
 
-    private static RegTestParams instance;
-    public static synchronized RegTestParams get() {
-        if (instance == null) {
-            instance = new RegTestParams();
-        }
-        return instance;
+    public FeeFilterMessage(NetworkParameters params) throws ProtocolException {
+        super(params);
+    }
+
+    @Override
+    public String toString() {
+        return "feefilter message";
     }
 }
