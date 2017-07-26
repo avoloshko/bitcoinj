@@ -89,6 +89,10 @@ public class LitecoinMainNetParams extends AbstractLitecoinNetParams {
             "dnsseed.litecoinpool.org",
             "dnsseed.koin-project.com"
         };
+
+        addrSeeds = new int[] {
+
+        };
     }
 
     @Override

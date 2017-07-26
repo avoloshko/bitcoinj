@@ -109,7 +109,7 @@ public final class BtcFixedFormat extends BtcFormat {
     /**
      * Return the currency symbol that identifies the units in which values formatted by this
      * instance are denominated. For example, when invoked on an instance denominated in
-     * millibitcoins, this method by default returns <code>"₥฿"</code>, depending on the
+     * millibitcoins, this method by default returns <code>"₥Ł"</code>, depending on the
      * locale.  */
     public String symbol() { return prefixSymbol(coinSymbol(), scale); }
 

@@ -38,7 +38,7 @@ public abstract class AbstractLitecoinNetParams extends NetworkParameters {
     /**
      * Scheme part for Bitcoin URIs.
      */
-    public static final String BITCOIN_SCHEME = "litecoin";
+    public static final String LITECOIN_SCHEME = "litecoin";
 
     private static final Logger log = LoggerFactory.getLogger(AbstractLitecoinNetParams.class);
 
@@ -150,7 +150,7 @@ public abstract class AbstractLitecoinNetParams extends NetworkParameters {
 
     @Override
     public String getUriScheme() {
-        return BITCOIN_SCHEME;
+        return LITECOIN_SCHEME;
     }
 
     @Override
