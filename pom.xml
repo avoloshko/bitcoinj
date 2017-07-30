@@ -20,7 +20,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>org.bitcoinj</groupId>
-  <artifactId>bitcoinj-parent</artifactId>
+  <artifactId>litecoinj-parent</artifactId>
   <version>0.15-SNAPSHOT</version>
   <packaging>pom</packaging>
 
@@ -43,8 +43,8 @@
     <url>scm:git:https://github.com/bitcoinj/bitcoinj</url>
   </scm>
 
-  <name>bitcoinj Parent</name>
-  <description>Provides the common configuration for the BitCoinJ modules</description>
+  <name>litecoinj Parent</name>
+  <description>Provides the common configuration for the LiteCoinJ modules</description>
   <url>http://www.bitcoinj.org/</url>
 
   <licenses>

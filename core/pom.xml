@@ -21,14 +21,14 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.bitcoinj</groupId>
-        <artifactId>bitcoinj-parent</artifactId>
+        <artifactId>litecoinj-parent</artifactId>
         <version>0.15-SNAPSHOT</version>
     </parent>
 
-    <artifactId>bitcoinj-core</artifactId>
+    <artifactId>litecoinj-core</artifactId>
 
-    <name>bitcoinj</name>
-    <description>A Java Bitcoin library</description>
+    <name>litecoinj</name>
+    <description>A Java Litecoin library</description>
 
     <packaging>jar</packaging>
 
@@ -149,7 +149,7 @@
                 <configuration>
                     <detectLinks/>
                     <links>
-                        <link>http://docs.guava-libraries.googlecode.com/git-history/release/javadoc/</link>
+                        <link>https://google.github.io/guava/releases/22.0/api/docs/</link>
                     </links>
                     <detectJavaApiLink/>
                     <quiet>true</quiet>
@@ -321,7 +321,10 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
-                    <argLine>-Xmx1024m ${surefireArgLine}</argLine><!-- Last argument is required for code coverage to work. -->
+                    <!-- First argument increases the maximum heap size, second argument disables a nasty HotSpot optimization
+                         (see http://jawspeak.com/2010/05/26/hotspot-caused-exceptions-to-lose-their-stack-traces-in-production-and-the-fix/)
+                         and last argument is required for code coverage to work. -->
+                    <argLine>-Xmx1024m -XX:-OmitStackTraceInFastThrow ${surefireArgLine}</argLine>
                     <runOrder>alphabetical</runOrder>
                     <systemProperties>
                         <property>
@@ -437,6 +440,11 @@
             <groupId>com.squareup.okhttp3</groupId>
             <artifactId>okhttp</artifactId>
             <version>3.6.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.lambdaworks</groupId>
+            <artifactId>scrypt</artifactId>
+            <version>1.4.0</version>
         </dependency>
     </dependencies>
 

@@ -17,53 +17,33 @@
 
 package org.bitcoinj.params;
 
-import static com.google.common.base.Preconditions.checkState;
+import com.google.common.base.Stopwatch;
+import org.bitcoinj.core.*;
+import org.bitcoinj.store.BlockStore;
+import org.bitcoinj.store.BlockStoreException;
+import org.bitcoinj.utils.MonetaryFormat;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.math.BigInteger;
 import java.util.concurrent.TimeUnit;
 
-import org.bitcoinj.core.Block;
-import org.bitcoinj.core.Coin;
-import org.bitcoinj.core.NetworkParameters;
-import org.bitcoinj.core.Sha256Hash;
-import org.bitcoinj.core.StoredBlock;
-import org.bitcoinj.core.Transaction;
-import org.bitcoinj.core.Utils;
-import org.bitcoinj.utils.MonetaryFormat;
-import org.bitcoinj.core.VerificationException;
-import org.bitcoinj.store.BlockStore;
-import org.bitcoinj.store.BlockStoreException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.common.base.Stopwatch;
-
-import org.bitcoinj.core.BitcoinSerializer;
+import static com.google.common.base.Preconditions.checkState;
 
 /**
  * Parameters for Bitcoin-like networks.
  */
-public abstract class AbstractBitcoinNetParams extends NetworkParameters {
+public abstract class AbstractLitecoinNetParams extends NetworkParameters {
 
     /**
      * Scheme part for Bitcoin URIs.
      */
-    public static final String BITCOIN_SCHEME = "bitcoin";
-    public static final int REWARD_HALVING_INTERVAL = 210000;
+    public static final String LITECOIN_SCHEME = "litecoin";
 
-    private static final Logger log = LoggerFactory.getLogger(AbstractBitcoinNetParams.class);
+    private static final Logger log = LoggerFactory.getLogger(AbstractLitecoinNetParams.class);
 
-    public AbstractBitcoinNetParams() {
+    public AbstractLitecoinNetParams() {
         super();
-    }
-
-    /**
-     * Checks if we are at a reward halving point.
-     * @param height The height of the previous stored block
-     * @return If this is a reward halving point
-     */
-    public final boolean isRewardHalvingPoint(final int height) {
-        return ((height + 1) % REWARD_HALVING_INTERVAL) == 0;
     }
 
     /**
@@ -71,7 +51,7 @@ public abstract class AbstractBitcoinNetParams extends NetworkParameters {
      * @param height The height of the previous stored block
      * @return If this is a difficulty transition point
      */
-    public final boolean isDifficultyTransitionPoint(final int height) {
+    public boolean isDifficultyTransitionPoint(final int height) {
         return ((height + 1) % this.getInterval()) == 0;
     }
 
@@ -80,8 +60,33 @@ public abstract class AbstractBitcoinNetParams extends NetworkParameters {
     	final BlockStore blockStore) throws VerificationException, BlockStoreException {
         final Block prev = storedPrev.getHeader();
 
+        final long proofOfWorkLimit = Utils.encodeCompactBits(maxTarget);
+
         // Is this supposed to be a difficulty transition point?
         if (!isDifficultyTransitionPoint(storedPrev.getHeight())) {
+
+            // litecoin/src/pow.cpp
+            if (powAllowMinDifficultyBlocks) {
+                // Special difficulty rule for testnet:
+                // If the new block's timestamp is more than 2* 10 minutes
+                // then allow mining of a min-difficulty block.
+                long target;
+                if (nextBlock.getTimeSeconds() > (storedPrev.getHeader().getTimeSeconds() + TARGET_SPACING * 2)) {
+                    target = proofOfWorkLimit;
+                } else {
+                    // Return the last non-special-min-difficulty-rules-block
+                    StoredBlock cursor = blockStore.get(prev.getHash());
+                    while (cursor.getHeight() % INTERVAL != 0 && cursor.getHeader().getDifficultyTarget() == proofOfWorkLimit) {
+                        cursor = blockStore.get(cursor.getHeader().getPrevBlockHash());
+                    }
+                    target = cursor.getHeader().getDifficultyTarget();
+                }
+                if (nextBlock.getDifficultyTarget() != target)
+                    throw new VerificationException("Unexpected change in difficulty at height " + storedPrev.getHeight() +
+                            ": " + Long.toHexString(nextBlock.getDifficultyTarget()) + " vs " +
+                            Long.toHexString(target));
+                return;
+            }
 
             // No ... so check the difficulty didn't actually change.
             if (nextBlock.getDifficultyTarget() != prev.getDifficultyTarget())
@@ -97,17 +102,15 @@ public abstract class AbstractBitcoinNetParams extends NetworkParameters {
         Sha256Hash hash = prev.getHash();
         StoredBlock cursor = null;
         final int interval = this.getInterval();
-        for (int i = 0; i < interval; i++) {
-            cursor = blockStore.get(hash);
-            if (cursor == null) {
-                // This should never happen. If it does, it means we are following an incorrect or busted chain.
-                throw new VerificationException(
-                        "Difficulty transition point but we did not find a way back to the last transition point. Not found: " + hash);
+        for (int i = 0; i <= interval; i++) {
+            StoredBlock next = blockStore.get(hash);
+            if (next == null) {
+                break;
+            } else {
+                cursor = next;
+                hash = cursor.getHeader().getPrevBlockHash();
             }
-            hash = cursor.getHeader().getPrevBlockHash();
         }
-        checkState(cursor != null && isDifficultyTransitionPoint(cursor.getHeight() - 1),
-                "Didn't arrive at a transition point.");
         watch.stop();
         if (watch.elapsed(TimeUnit.MILLISECONDS) > 50)
             log.info("Difficulty transition traversal took {}", watch);
@@ -160,7 +163,7 @@ public abstract class AbstractBitcoinNetParams extends NetworkParameters {
 
     @Override
     public int getProtocolVersionNum(final ProtocolVersion version) {
-        return PROTOCOL_VERSION;
+        return version.getBitcoinProtocolVersion();
     }
 
     @Override
@@ -170,7 +173,7 @@ public abstract class AbstractBitcoinNetParams extends NetworkParameters {
 
     @Override
     public String getUriScheme() {
-        return BITCOIN_SCHEME;
+        return LITECOIN_SCHEME;
     }
 
     @Override
