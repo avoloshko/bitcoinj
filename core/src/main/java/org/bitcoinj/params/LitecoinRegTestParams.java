@@ -52,6 +52,8 @@ public class LitecoinRegTestParams extends AbstractLitecoinNetParams {
         majorityRejectBlockOutdated = LitecoinTestNetParams.TESTNET_MAJORITY_REJECT_BLOCK_OUTDATED;
         majorityWindow = LitecoinTestNetParams.TESTNET_MAJORITY_WINDOW;
 
+        powAllowMinDifficultyBlocks = true;
+
         spendableCoinbaseDepth = 100;
         subsidyDecreaseBlockCount = 150;
     }

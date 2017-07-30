@@ -17,7 +17,12 @@
 
 package org.bitcoinj.params;
 
+import org.bitcoinj.core.Block;
+import org.bitcoinj.core.Sha256Hash;
 import org.bitcoinj.core.Utils;
+import org.bitcoinj.utils.VersionTally;
+
+import java.util.EnumSet;
 
 import static com.google.common.base.Preconditions.checkState;
 
@@ -35,6 +40,7 @@ public class LitecoinTestNetParams extends AbstractLitecoinNetParams {
         id = ID_TESTNET;
         interval = INTERVAL;
         targetTimespan = TARGET_TIMESPAN;
+
         maxTarget = Utils.decodeCompactBits(0x1e0fffffL);
         dumpedPrivateKeyHeader = 239;
         addressHeader = 111;
@@ -50,11 +56,15 @@ public class LitecoinTestNetParams extends AbstractLitecoinNetParams {
         majorityRejectBlockOutdated = TESTNET_MAJORITY_REJECT_BLOCK_OUTDATED;
         majorityWindow = TESTNET_MAJORITY_WINDOW;
 
+        powAllowMinDifficultyBlocks = true;
+
         genesisBlock.setTime(1486949366L);
-        genesisBlock.setDifficultyTarget(0x1e0ffff0L);
+        genesisBlock.setDifficultyTarget(0x1E0FFFF0L);
         genesisBlock.setNonce(293345L);
         spendableCoinbaseDepth = 100;
         subsidyDecreaseBlockCount = 210000;
+
+        checkpoints.put(2056, new Sha256Hash("17748a31ba97afdc9a4f86837a39d287e3e7c7290a08a1d816c5969c78a83289"));
 
         String genesisHash = genesisBlock.getHashAsString();
         checkState(genesisHash.equals("4966625a4b2851d9fdee139e56211a0d88575f59ed816ff5e6a63deb4e3e29a0"));

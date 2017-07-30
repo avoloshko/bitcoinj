@@ -51,6 +51,8 @@ public class LitecoinMainNetParams extends AbstractLitecoinNetParams {
         majorityRejectBlockOutdated = MAINNET_MAJORITY_REJECT_BLOCK_OUTDATED;
         majorityWindow = MAINNET_MAJORITY_WINDOW;
 
+        powAllowMinDifficultyBlocks = false;
+
         genesisBlock.setDifficultyTarget(0x1e0ffff0L);
         genesisBlock.setTime(1317972665L);
         genesisBlock.setNonce(2084524493L);
